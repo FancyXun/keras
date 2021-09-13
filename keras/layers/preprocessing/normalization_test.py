@@ -110,7 +110,7 @@ def _get_layer_computation_test_cases():
   return crossed_test_cases
 
 
-@keras_parameterized.run_all_keras_modes
+# @keras_parameterized.run_all_keras_modes
 class NormalizationTest(keras_parameterized.TestCase,
                         preprocessing_test_utils.PreprocessingLayerTest):
 
@@ -183,6 +183,21 @@ class NormalizationTest(keras_parameterized.TestCase,
     with self.assertRaisesRegex(ValueError,
                                 "axis.*values must be in the range"):
       normalization.Normalization()(1)
+
+  def test_save_load_h5_without_arguments(self):
+    input_data = np.array([[1, 2, 3, 4, 5]])
+
+    cls = normalization.Normalization
+    layer = cls()
+    layer.adapt(input_data)
+    model = keras.models.Sequential()
+    model.add(layer)
+    model.add(keras.layers.Dense(1, activation='relu'))
+    output_path = os.path.join(self.get_temp_dir(), "tf_keras_saved_model.h5")
+    model.save(output_path)
+    loaded_model = keras.models.load_model(
+        output_path)
+    self.assertIsNot(model, loaded_model)
 
 
 @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
